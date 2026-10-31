@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "id": "hwander",
+  "name": "Halcyon Wander",
+  "parameters": [
+    {
+      "id": "sound",
+      "label": "Sound",
+      "default": 0.0333,
+      "mapping": {
+        "kind": "enum",
+        "labels": [
+          "Rhubarb",
+          "Velvet",
+          "Amber",
+          "Pylon",
+          "Tide",
+          "Ghost",
+          "Warp",
+          "Tine",
+          "Wurli",
+          "Mallet",
+          "Ivory",
+          "Cassette",
+          "Harp",
+          "Kalimba",
+          "Pebble"
+        ]
+      },
+      "display": "enum"
+    },
+    {
+      "id": "rate",
+      "label": "Rate",
+      "default": 0.4,
+      "mapping": {
+        "kind": "linear",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "display": "percent"
+    },
+    {
+      "id": "chance",
+      "label": "Chance",
+      "default": 0.65,
+      "mapping": {
+        "kind": "linear",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "display": "percent"
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "default": 0.19,
+      "mapping": {
+        "kind": "enum",
+        "labels": [
+          "minor",
+          "dorian",
+          "harm min",
+          "phrygian",
+          "lydian",
+          "major",
+          "maj pent",
+          "min pent"
+        ]
+      },
+      "display": "enum"
+    },
+    {
+      "id": "dejavu",
+      "label": "Deja vu",
+      "default": 0.5,
+      "mapping": {
+        "kind": "linear",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "display": "percent",
+      "control": 0
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "default": 0.46875,
+      "mapping": {
+        "kind": "enum",
+        "labels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      },
+      "display": "enum",
+      "control": 1
+    },
+    {
+      "id": "spread",
+      "label": "Spread",
+      "default": 0.375,
+      "mapping": {
+        "kind": "enum",
+        "labels": [
+          "1 oct",
+          "2 oct",
+          "3 oct",
+          "4 oct"
+        ]
+      },
+      "display": "enum",
+      "control": 2
+    },
+    {
+      "id": "jitter",
+      "label": "Jitter",
+      "default": 0.25,
+      "mapping": {
+        "kind": "linear",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "display": "percent",
+      "control": 3
+    }
+  ],
+  "presets": {},
+  "resources": {
+    "voiceBytes": 704,
+    "voiceAlignment": 4,
+    "voiceCapacity": 8,
+    "sharedBytes": 4,
+    "outputPeakQ31": 1288490189,
+    "display": {
+      "stateBytes": 164,
+      "stateAlignment": 4,
+      "paths": 0,
+      "points": 0,
+      "nodes": 70,
+      "texts": 16,
+      "palette": 9
+    }
+  },
+  "press": "page"
+}

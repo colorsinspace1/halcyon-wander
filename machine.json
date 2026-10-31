@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sdk": "1.6",
+  "kind": "synth",
+  "description": "Halcyon Wander: hold a key and Halcyon's soft tones wander in a scale of their own, after Mutable Instruments' Marbles.",
+  "presetDefaults": {
+    "amp": {
+      "attack": 0,
+      "decay": 0,
+      "sustain": 32767,
+      "release": 20000
+    }
+  },
+  "presets": "presets"
+}
