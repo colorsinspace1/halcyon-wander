@@ -268,11 +268,11 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     // over: a few a second at first, about 200 a second at full, while the
     // steady hiss falls back to a whisper underneath.
     const u32 steady_hiss = hiss <= 6554u ? hiss * 5u : 32767u - ((hiss - 6554u) * 24575u / 26213u);  // Q15, peak at 20%
-    const i32 hiss_gain = q31(steady_hiss * steady_hiss >> 15 >> 3);              // up to 0.125
+    const i32 hiss_gain = q31(steady_hiss * steady_hiss >> 15 >> 8);              // up to 0.004: quiet
     const u32 grains = hiss > 3277u ? (hiss - 3277u) * 32767u / 29490u : 0u;      // Q15, 0 at 10%
     const u32 dust_rate = grains ? 4u + (196u * (grains * grains >> 15) >> 15) : 0u;  // particles a second
     const u32 dust_chance = dust_rate * 97391u * opxy::block_frames;              // per block, of 2^32
-    const i32 dust_gain = grains ? q31(820u + (grains * 1638u >> 15)) : 0;        // 0.025 .. 0.075: quiet, so they stay under the tone
+    const i32 dust_gain = grains ? q31(131u + (grains * 262u >> 15)) : 0;         // 0.004 .. 0.012: quiet, under the tone
     // A particle may start at the top of a block; its level is worked out per
     // block (each fades over several) and ramped across the samples between.
     i32 dust_now = 0, dust_step = 0;
@@ -296,7 +296,7 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     }
     i32 band_noise = 0;
     const bool noisy = hiss_gain || dust_live;
-    // A sounding particle kicks the saw's low-pass open, up to about 3x, set
+    // A sounding particle nudges the saw's low-pass open a little, set
     // once a block from the particle's level (it fades over several blocks).
     i32 fi = f;
     if (dust_live) {
