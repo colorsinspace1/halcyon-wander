@@ -1,6 +1,7 @@
 {
   "engine": {
     "bendrange": 8191,
+    "detune": 0,
     "highpass": 0,
     "modulation": {
       "aftertouch": {
@@ -21,11 +22,11 @@
       }
     },
     "params": [
-      5461,
-      9175,
-      19660,
-      6144,
-      18022,
+      3277,
+      9830,
+      21299,
+      2048,
+      16384,
       15360,
       12288,
       9830
@@ -43,8 +44,8 @@
   "envelope": {
     "amp": {
       "attack": 0,
-      "decay": 0,
-      "release": 24000,
+      "decay": 8192,
+      "release": 21789,
       "sustain": 32767
     },
     "filter": {
@@ -55,14 +56,14 @@
     }
   },
   "fx": {
-    "active": false,
+    "active": true,
     "params": [
+      8437,
+      2703,
       0,
       0,
       0,
       0,
-      0,
-      32767,
       0,
       0
     ],
@@ -82,7 +83,7 @@
     ],
     "type": "value"
   },
-  "octave": 0,
+  "octave": 1,
   "platform": "OP-XY",
   "regions": [],
   "type": "hwander",

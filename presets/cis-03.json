@@ -1,6 +1,7 @@
 {
   "engine": {
     "bendrange": 8191,
+    "detune": 0,
     "highpass": 0,
     "modulation": {
       "aftertouch": {
@@ -21,14 +22,14 @@
       }
     },
     "params": [
-      18568,
-      14745,
-      22937,
-      6144,
+      5461,
+      9175,
       19660,
+      6144,
+      18022,
       15360,
       12288,
-      8192
+      9830
     ],
     "playmode": "poly",
     "portamento.amount": 0,
@@ -37,15 +38,15 @@
     "tuning.root": 0,
     "tuning.scale": 0,
     "velocity.sensitivity": 0,
-    "volume": 16384,
+    "volume": 32767,
     "width": 0
   },
   "envelope": {
     "amp": {
-      "attack": 0,
-      "decay": 0,
-      "release": 16000,
-      "sustain": 32767
+      "attack": 7828,
+      "decay": 9175,
+      "release": 21133,
+      "sustain": 0
     },
     "filter": {
       "attack": 0,
@@ -55,32 +56,32 @@
     }
   },
   "fx": {
-    "active": false,
+    "active": true,
     "params": [
+      9011,
+      8355,
+      819,
       0,
       0,
       0,
-      0,
-      0,
-      32767,
       0,
       0
     ],
     "type": "svf"
   },
   "lfo": {
-    "active": false,
+    "active": true,
     "params": [
-      0,
-      0,
-      0,
-      0,
+      23040,
+      17694,
+      23920,
+      16384,
       0,
       0,
       0,
       0
     ],
-    "type": "value"
+    "type": "tremolo"
   },
   "octave": 0,
   "platform": "OP-XY",

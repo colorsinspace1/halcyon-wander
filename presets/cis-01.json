@@ -1,6 +1,7 @@
 {
   "engine": {
     "bendrange": 8191,
+    "detune": 0,
     "highpass": 0,
     "modulation": {
       "aftertouch": {
@@ -21,13 +22,13 @@
       }
     },
     "params": [
-      14199,
+      1092,
       9830,
       19660,
-      26623,
-      19660,
-      9216,
-      12288,
+      6144,
+      18022,
+      15360,
+      20479,
       9830
     ],
     "playmode": "poly",
@@ -37,15 +38,15 @@
     "tuning.root": 0,
     "tuning.scale": 0,
     "velocity.sensitivity": 0,
-    "volume": 16384,
+    "volume": 32767,
     "width": 0
   },
   "envelope": {
     "amp": {
-      "attack": 0,
-      "decay": 0,
-      "release": 22000,
-      "sustain": 32767
+      "attack": 128,
+      "decay": 9175,
+      "release": 16710,
+      "sustain": 0
     },
     "filter": {
       "attack": 0,
@@ -62,7 +63,7 @@
       0,
       0,
       0,
-      32767,
+      0,
       0,
       0
     ],

@@ -33,7 +33,7 @@ inline void display(DisplayState& state, const Input& input, Frame& frame) {
     const char* const scales[8] = {"min", "dor", "harm", "phry", "lyd", "maj", "Mpen", "mpen"};
     char values[8][header_capacity] = {};
     for (u32 i = 0; i < 8; ++i) header_amount(values[i], header_capacity, input.slots[i]);
-    const char* const tones[journey::tone_count] = {"Rhub", "Velvt", "Amber", "Pylon", "Tide", "Ghost", "Warp", "Tine", "Wurli", "Mallt", "Ivory", "Casst", "Harp", "Kalim", "Pebbl"};
+    const char* const tones[journey::tone_count] = {"CIS01", "CIS02", "CIS03", "CIS04", "CIS05", "CIS06", "CIS07", "CIS08", "CIS09", "CIS10", "CIS11", "CIS12", "CIS13", "CIS14", "CIS15"};
     copy(values[0], header_capacity, tones[c.sound]);
     copy(values[3], header_capacity, scales[c.scale]);
     values[5][0] = c.length >= 10 ? '1' : static_cast<char>('0' + c.length);

@@ -1,6 +1,7 @@
 {
   "engine": {
     "bendrange": 8191,
+    "detune": 0,
     "highpass": 0,
     "modulation": {
       "aftertouch": {
@@ -21,14 +22,14 @@
       }
     },
     "params": [
-      7646,
-      8192,
-      18022,
-      2048,
+      16384,
+      14745,
+      22937,
+      6144,
       19660,
-      13312,
-      20479,
-      11468
+      15360,
+      12288,
+      8192
     ],
     "playmode": "poly",
     "portamento.amount": 0,
@@ -37,44 +38,44 @@
     "tuning.root": 0,
     "tuning.scale": 0,
     "velocity.sensitivity": 0,
-    "volume": 16384,
+    "volume": 17039,
     "width": 0
   },
   "envelope": {
     "amp": {
-      "attack": 0,
-      "decay": 0,
-      "release": 26000,
-      "sustain": 32767
+      "attack": 9666,
+      "decay": 9666,
+      "release": 12122,
+      "sustain": 22281
     },
     "filter": {
-      "attack": 0,
-      "decay": 0,
+      "attack": 20480,
+      "decay": 12943,
       "release": 0,
-      "sustain": 32767
+      "sustain": 9992
     }
   },
   "fx": {
-    "active": false,
+    "active": true,
     "params": [
+      8028,
+      14336,
+      7536,
+      3850,
       0,
       0,
-      0,
-      0,
-      0,
-      32767,
       0,
       0
     ],
     "type": "svf"
   },
   "lfo": {
-    "active": false,
+    "active": true,
     "params": [
-      0,
-      0,
-      0,
-      0,
+      19988,
+      20643,
+      6826,
+      6144,
       0,
       0,
       0,

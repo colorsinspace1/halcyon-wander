@@ -1,6 +1,7 @@
 {
   "engine": {
     "bendrange": 8191,
+    "detune": 0,
     "highpass": 0,
     "modulation": {
       "aftertouch": {
@@ -42,38 +43,38 @@
   },
   "envelope": {
     "amp": {
-      "attack": 0,
-      "decay": 0,
-      "release": 12000,
+      "attack": 128,
+      "decay": 8192,
+      "release": 13105,
       "sustain": 32767
     },
     "filter": {
-      "attack": 0,
-      "decay": 0,
+      "attack": 10485,
+      "decay": 21463,
       "release": 0,
-      "sustain": 32767
+      "sustain": 19987
     }
   },
   "fx": {
-    "active": false,
+    "active": true,
     "params": [
+      10403,
+      2375,
+      7045,
+      3768,
       0,
       0,
-      0,
-      0,
-      0,
-      32767,
       0,
       0
     ],
     "type": "svf"
   },
   "lfo": {
-    "active": false,
+    "active": true,
     "params": [
-      0,
-      0,
-      0,
+      18350,
+      13435,
+      28671,
       0,
       0,
       0,

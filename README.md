@@ -6,7 +6,7 @@ Halcyon's soft tones wander in a scale of their own, from the key you hold. Afte
 
 | Page 1 | |
 | --- | --- |
-| **Sound** | Halcyon's tones: Rhubarb, Ascent, Pure, Fog, Lunar |
+| **Sound** | fifteen Halcyon sounds by Colors In Space, CIS 1 to CIS 15 |
 | **Rate** | how often the line steps, from every 4 s to 20 a second |
 | **Chance** | how many of those steps sound |
 | **Scale** | minor, dorian, harmonic minor, phrygian, lydian, major, major pentatonic, minor pentatonic |

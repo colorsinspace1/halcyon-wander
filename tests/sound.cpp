@@ -18,7 +18,7 @@ Result hold(const opxy::i32 (&p)[8], unsigned blocks) {
     for (unsigned b = 0; b < blocks; ++b) {
         hwander::render(voice, shared, 7, output, p, pitch);
         for (unsigned n = 0; n < hwander::notes; ++n)
-            if (voice.note[n].ratio && voice.note[n].fade > 2142000000) ++r.notes;   // begun this block
+            if (voice.note[n].ratio && voice.note[n].fade > hwander::tones[0].fade_step - 8) ++r.notes;   // begun this block (counted for tone 1)
         for (unsigned i = 0; i < opxy::block_frames; ++i) {
             r.sounding = r.sounding || output[i] != 0;
             r.bounded = r.bounded && output[i] >= -1288490189 && output[i] <= 1288490189;
