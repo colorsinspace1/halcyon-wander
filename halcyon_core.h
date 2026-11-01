@@ -8,6 +8,7 @@ struct Voice {
     // the late octaves and the chord tones run on their own phases.
     opxy::u32 phase, copy_phase, phase_up, phase_down, phase_fifth, phase_ninth;
     opxy::i32 low, band;               // the saws' state-variable low-pass, Q29
+    opxy::i32 soft;                    // and a third pole after it
     // Swell: the bloom's position, 0 at the key press to full at the end, Q31.
     opxy::u32 bloom;
     opxy::u32 blocks;                  // blocks since the note started (stops counting at the top)
@@ -24,6 +25,8 @@ struct Voice {
     opxy::u32 chorus;                  // the ensemble's slow detune sweep
     // Hiss: band-limited noise. Age: the tape's rounded top and level wobble.
     opxy::i32 hiss_low, hiss_high;
+    opxy::i32 dust, dust_decay, dust_low;   // Hiss's particles
+    opxy::u32 dust_random;
     opxy::i32 tape;                    // Age's low-pass state, Q29
     opxy::u32 reel;
     opxy::i32 wobble, wobble_target;
