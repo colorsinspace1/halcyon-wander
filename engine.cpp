@@ -123,18 +123,26 @@ inline void render(Voice& v, Shared& shared, u32, opxy::Output output, opxy::Par
     for (unsigned i = 0; i < opxy::block_frames; ++i) output[i] = 0;
     i32 tone[opxy::block_frames];
     u32 raised[opxy::block_frames];
+    bool steady = true;
+    for (unsigned i = 1; i < opxy::block_frames; ++i) if (pitch[i] != pitch[0]) { steady = false; break; }
     for (u32 n = 0; n < notes; ++n) {
         Note& note = v.note[n];
         if (!note.ratio) continue;
-        for (unsigned i = 0; i < opxy::block_frames; ++i) {
-            const u32 r = journey::mul_shift(pitch[i], note.ratio, 16);
-            raised[i] = r > 0x3fffffffu ? 0x3fffffffu : r;            // at most a quarter of the sample rate
+        if (steady) {
+            // The usual case, a held pitch: one product for the whole block.
+            const u32 r = journey::mul_shift(pitch[0], note.ratio, 16);
+            const u32 q = r > 0x3fffffffu ? 0x3fffffffu : r;               // at most a quarter of the sample rate
+            for (unsigned i = 0; i < opxy::block_frames; ++i) raised[i] = q;
+        } else {
+            for (unsigned i = 0; i < opxy::block_frames; ++i) {
+                const u32 r = journey::mul_shift(pitch[i], note.ratio, 16);
+                raised[i] = r > 0x3fffffffu ? 0x3fffffffu : r;
+            }
         }
         note.tone.seventh_target = tones[c.sound].seventh;
         note.tone.wow = tones[c.sound].wow;
-        hwtone::render(note.tone, shared.halcyon, v.owner, tone, tones[c.sound].controls, raised);
-        // The level glides from this block's to the next across the block: no steps.
-        const i32 before = multiply(multiply(note.fade, static_cast<i32>(note.gain) << 16), mix);
+        // The note's level for the end of this block; Halcyon glides to it across
+        // the block inside its own level ramp, so there are no steps.
         if (note.dying) {
             --note.dying;
             note.fade = note.dying ? note.fade / static_cast<i32>(note.dying + 1) * static_cast<i32>(note.dying) : 0;
@@ -142,9 +150,8 @@ inline void render(Voice& v, Shared& shared, u32, opxy::Output output, opxy::Par
             note.fade = multiply(note.fade, tones[c.sound].fade_step);
         }
         const i32 after = multiply(multiply(note.fade, static_cast<i32>(note.gain) << 16), mix);
-        const i32 slope = (after - before) / static_cast<i32>(opxy::block_frames);
-        i32 level = before;
-        for (unsigned i = 0; i < opxy::block_frames; ++i) { output[i] += multiply(tone[i], level); level += slope; }
+        hwtone::render(note.tone, shared.halcyon, v.owner, tone, tones[c.sound].controls, raised, after);
+        for (unsigned i = 0; i < opxy::block_frames; ++i) output[i] += tone[i];
         if (!note.fade && note.next_ratio) {
             begin_note(note, shared, v.owner, note.next_ratio, note.next_gain);
             note.next_ratio = 0;

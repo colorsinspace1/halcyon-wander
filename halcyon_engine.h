@@ -127,7 +127,7 @@ inline void start(Voice& v, Shared& shared, opxy::u32) {
 inline void destroy(Voice&, Shared&, opxy::u32) {}
 
 inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
-                   opxy::Parameters parameters, opxy::Pitch pitch) {
+                   opxy::Parameters parameters, opxy::Pitch pitch, i32 scale = 0x7fffffff) {
     // The shared clock: if no other voice has moved it since this voice last
     // looked, this voice is the first to render this block, so it moves it on.
     if (shared.clock == v.seen) ++shared.clock;
@@ -214,8 +214,10 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
         main_gain = full - multiply(v.copy_level, 0x33333333);                         // 1.0 -> 0.6
         copy_gain = multiply(v.copy_level, 0x4ccccccd);                                // 0 -> 0.6
     }
-    const i32 copy_sine_gain = multiply(sine_gain, copy_gain), copy_saw_gain = multiply(saw_gain, copy_gain);
-    const i32 main_sine_gain = multiply(sine_gain, main_gain), main_saw_gain = multiply(saw_gain, main_gain);
+    // The copy is a sine only (Halcyon Keys' lighter ensemble): the saw stays
+    // single and keeps the copy's share of level, so the blend sounds the same.
+    const i32 copy_sine_gain = multiply(sine_gain, copy_gain);
+    const i32 main_sine_gain = multiply(sine_gain, main_gain), main_saw_gain = multiply(saw_gain, main_gain + copy_gain);
 
     // --- Air: the late octaves -----------------------------------------------
     const u32 wait = 103u + (swell * 827u >> 15);                                 // 0.15 .. 1.35 s
@@ -247,6 +249,8 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     // whole stays about as loud however many layers sound.
     const i32 added = v.up_level + v.down_level + v.fifth_level + v.ninth_level + v.seventh_level;
     const i32 base = full - multiply(added, 0x50000000);                           // 5/8 of the added share
+    // The base share folded into the note's own gains: one product a sample fewer.
+    const i32 sine_now = multiply(main_sine_gain, base), copy_now = multiply(copy_sine_gain, base), saw_now = multiply(main_saw_gain, base);
 
     // --- Hiss: noise between about 1 and 7 kHz ---------------------------------
     const i32 hiss_gain = q31(hiss * hiss >> 15 >> 2);                            // up to 0.25, gentle at first
@@ -272,30 +276,32 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     }
 
     // --- Level: the bloom, ramped smoothly across the block --------------------
-    i32 target = multiply(q31(shape), output_gain);
+    // `scale`: the caller's own level for this note, folded into the same ramp.
+    i32 target = multiply(multiply(q31(shape), output_gain), scale);
     target = multiply(target, q31(wobble_scale));
     const i32 ramp = (target - v.level) >> 6;
     i32 level = v.level;
     v.level = target;
 
     i32 hiss_value = 0;
+    // A held pitch (the usual case) needs its bent increment only once a block.
+    bool steady = true;
+    for (unsigned i = 1; i < opxy::block_frames; ++i) if (pitch[i] != pitch0) { steady = false; break; }
+    const u32 held_increment = pitch0 + static_cast<u32>(multiply(static_cast<i32>(pitch0), bend));
+    const u32 held_copy = doubled ? held_increment + static_cast<u32>(multiply(static_cast<i32>(held_increment), copy_detune)) : 0u;
     for (unsigned i = 0; i < opxy::block_frames; ++i) {
         const u32 p = pitch[i];
-        const u32 increment = p + static_cast<u32>(multiply(static_cast<i32>(p), bend));
-        i32 tone = multiply(table_sine(v.phase) << 14, main_sine_gain);           // Q29
+        const u32 increment = steady ? held_increment : p + static_cast<u32>(multiply(static_cast<i32>(p), bend));
+        i32 tone = multiply(table_sine(v.phase) << 14, sine_now);           // Q29
         i32 saws = 0;
         u32 copy_increment = 0;
         if (doubled) {
-            copy_increment = increment + static_cast<u32>(multiply(static_cast<i32>(increment), copy_detune));
-            tone += multiply(table_sine(v.copy_phase) << 14, copy_sine_gain);
+            copy_increment = steady ? held_copy : increment + static_cast<u32>(multiply(static_cast<i32>(increment), copy_detune));
+            tone += multiply(table_sine(v.copy_phase) << 14, copy_now);
         }
         if (saw_gain) {
             const i32 a = smooth_saw ? soft_saw(v.phase, increment, inverse) : static_cast<i32>(v.phase ^ 0x80000000u) >> 3;
-            saws = multiply(a << 1, main_saw_gain);
-            if (doubled) {
-                const i32 b = smooth_saw ? soft_saw(v.copy_phase, copy_increment, inverse) : static_cast<i32>(v.copy_phase ^ 0x80000000u) >> 3;
-                saws += multiply(b << 1, copy_saw_gain);
-            }
+            saws = multiply(a << 1, saw_now);
             // State-variable low-pass, 12 dB per octave; both saws share it.
             v.low += multiply(v.band, f);
             const i32 high = saws - v.low - (multiply(v.band, damping) << 1);
@@ -304,7 +310,6 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
             // the two must reinforce, not cancel.
             tone -= v.low;
         }
-        tone = multiply(tone, base);
         if (layered) {
             tone += multiply(table_sine(v.phase_up) << 14, v.up_level);
             tone += multiply(table_sine(v.phase_down) << 14, v.down_level);
