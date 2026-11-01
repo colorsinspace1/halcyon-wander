@@ -272,7 +272,7 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     const u32 grains = hiss > 3277u ? (hiss - 3277u) * 32767u / 29490u : 0u;      // Q15, 0 at 10%
     const u32 dust_rate = grains ? 4u + (196u * (grains * grains >> 15) >> 15) : 0u;  // particles a second
     const u32 dust_chance = dust_rate * 97391u * opxy::block_frames;              // per block, of 2^32
-    const i32 dust_gain = grains ? q31(1966u + (grains * 7864u >> 15)) : 0;       // 0.06 .. 0.30
+    const i32 dust_gain = grains ? q31(1311u + (grains * 3604u >> 15)) : 0;       // 0.04 .. 0.15: quieter as they thicken
     // A particle may start at the top of a block; its level is worked out per
     // block (each fades over several) and ramped across the samples between.
     i32 dust_now = 0, dust_step = 0;
@@ -301,7 +301,7 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     i32 fi = f;
     if (dust_live) {
         const i32 bump = multiply(f, dust_now);
-        fi = bump >= (coefficient_limit - f) >> 3 ? coefficient_limit : f + (bump << 3);
+        fi = bump >= (coefficient_limit - f) >> 4 ? coefficient_limit : f + (bump << 4);
     }
 
     // --- Age: saturation, a rounded top, a little wobble in level -------------
