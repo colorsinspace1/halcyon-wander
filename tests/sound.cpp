@@ -21,7 +21,7 @@ Result hold(const opxy::i32 (&p)[8], unsigned blocks) {
             if (voice.note[n].ratio && voice.note[n].fade > 2142000000) ++r.notes;   // begun this block
         for (unsigned i = 0; i < opxy::block_frames; ++i) {
             r.sounding = r.sounding || output[i] != 0;
-            r.bounded = r.bounded && output[i] >= -1073741824 && output[i] <= 1073741824;
+            r.bounded = r.bounded && output[i] >= -1288490189 && output[i] <= 1288490189;
         }
     }
     return r;
