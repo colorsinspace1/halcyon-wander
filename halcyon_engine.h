@@ -271,8 +271,38 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
     const i32 hiss_gain = q31(steady_hiss * steady_hiss >> 15 >> 3);              // up to 0.125
     const u32 grains = hiss > 3277u ? (hiss - 3277u) * 32767u / 29490u : 0u;      // Q15, 0 at 10%
     const u32 dust_rate = grains ? 4u + (196u * (grains * grains >> 15) >> 15) : 0u;  // particles a second
-    const u32 dust_chance = dust_rate * 97391u;                                   // per sample, of 2^32
+    const u32 dust_chance = dust_rate * 97391u * opxy::block_frames;              // per block, of 2^32
     const i32 dust_gain = grains ? q31(1966u + (grains * 7864u >> 15)) : 0;       // 0.06 .. 0.30
+    // A particle may start at the top of a block; its level is worked out per
+    // block (each fades over several) and ramped across the samples between.
+    i32 dust_now = 0, dust_step = 0;
+    if (dust_gain) {
+        v.dust_random = v.dust_random * 1664525u + 1013904223u;
+        if (v.dust_random < dust_chance) {
+            const u32 pick = v.dust_random * 2891336453u + 1u;
+            v.dust = static_cast<i32>(0x26666666u + ((pick * 747796405u) >> 2));         // 0.3 .. 0.8
+            i32 d = 2131000000 + static_cast<i32>((pick >> 12) & 0x3fffu) * 600;           // fade per sample
+            for (unsigned k = 0; k < 6; ++k) d = multiply(d, d);                           // ... and per block
+            v.dust_decay = d;
+        }
+    }
+    const bool dust_live = dust_gain && v.dust > 0x01000000;                       // let go below -42 dB
+    if (dust_live) {
+        dust_now = multiply(v.dust, dust_gain);
+        v.dust = multiply(v.dust, v.dust_decay);
+        dust_step = (multiply(v.dust, dust_gain) - dust_now) >> 6;
+    } else {
+        v.dust = 0;
+    }
+    i32 band_noise = 0;
+    const bool noisy = hiss_gain || dust_live;
+    // A sounding particle kicks the saw's low-pass open, up to about 3x, set
+    // once a block from the particle's level (it fades over several blocks).
+    i32 fi = f;
+    if (dust_live) {
+        const i32 bump = multiply(f, dust_now);
+        fi = bump >= (coefficient_limit - f) >> 3 ? coefficient_limit : f + (bump << 3);
+    }
 
     // --- Age: saturation, a rounded top, a little wobble in level -------------
     // Age comes in on a curve: barely there below 15, then growing.
@@ -321,32 +351,25 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
         // Hiss's particles: short bursts of bright noise, 2 to 8 ms, at random
         // levels. Half is heard as it is; the other half goes into the saw's
         // low-pass, and each particle also kicks the low-pass open for a moment.
+        // One band of noise, about 2 to 10 kHz, worked out every other sample
+        // and held; the hiss and the particles both use it.
+        if (noisy && !(i & 1u)) {
+            v.random = v.random * 1664525u + 1013904223u;                         // one step of a cheap noise source
+            const i32 white = static_cast<i32>(v.random) >> 2;                    // Q29
+            v.hiss_high += (white - v.hiss_high) - ((white - v.hiss_high) >> 3);
+            v.hiss_low += (v.hiss_high - v.hiss_low) >> 2;
+            band_noise = (v.hiss_high - v.hiss_low) << 1;
+        }
         i32 grain = 0;
-        if (dust_gain) {
-            v.dust_random = v.dust_random * 1664525u + 1013904223u;
-            const u32 roll = v.dust_random;
-            if (roll < dust_chance) {
-                const u32 pick = roll * 2891336453u + 1u;
-                v.dust = static_cast<i32>(0x26666666u + ((pick * 747796405u) >> 2));     // 0.3 .. 0.8
-                v.dust_decay = 2131000000 + static_cast<i32>((pick >> 12) & 0x3fffu) * 600;
-            }
-            if (v.dust > 0x10000) {
-                v.dust = multiply(v.dust, v.dust_decay);
-                const i32 white = static_cast<i32>(roll * 747796405u) >> 2;           // Q29
-                v.dust_low += (white - v.dust_low) >> 3;                              // under about 900 Hz away
-                grain = multiply(multiply((white - v.dust_low) << 1, v.dust), dust_gain);
-                tone += grain >> 1;
-            }
+        if (dust_live) {
+            dust_now += dust_step;
+            grain = multiply(band_noise, dust_now);
+            tone += grain >> 1;
         }
         if (saw_gain) {
             const i32 a = smooth_saw ? soft_saw(v.phase, increment, inverse) : static_cast<i32>(v.phase ^ 0x80000000u) >> 3;
             saws = multiply(a << 1, saw_now);
             saws += grain;
-            i32 fi = f;
-            if (grain) {                                                      // a particle opens it, up to about 3x
-                const i32 bump = multiply(f, multiply(v.dust, dust_gain));
-                fi = bump >= (coefficient_limit - f) >> 3 ? coefficient_limit : f + (bump << 3);
-            }
             // State-variable low-pass, 12 dB per octave, then a third pole: 18 dB.
             v.low += multiply(v.band, fi);
             const i32 high = saws - v.low - v.band - (v.band >> 2);           // damping 1.25: shifts, not a multiply
@@ -382,14 +405,7 @@ inline void render(Voice& v, Shared& shared, opxy::u32, opxy::Output output,
             ease(v.tape, saturated, tape_rate);
             tone += multiply(v.tape - tone, wet);
         }
-        if (hiss_gain) {
-            v.random = v.random * 1664525u + 1013904223u;                         // one step of a cheap noise source
-            const i32 white = static_cast<i32>(v.random) >> 2;                    // Q29
-            const i32 rise = white - v.hiss_high;
-            v.hiss_high += rise - (rise >> 2);                                    // about 10 kHz down
-            v.hiss_low += (v.hiss_high - v.hiss_low) >> 2;                        // about 2 kHz up
-            tone += multiply((v.hiss_high - v.hiss_low) << 1, hiss_gain);
-        }
+        if (hiss_gain) tone += multiply(band_noise, hiss_gain);
         // A soft ceiling: untouched up to the knee, then curving smoothly over.
         if (tone > knee || tone < -knee) {
             const bool down = tone < 0;
