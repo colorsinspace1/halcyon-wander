@@ -51,6 +51,26 @@ const i32 silent = 0x00b8449c;      // below this a note is let go (-45 dB)
 const i32 mix = 0x35c28f5c;         // each note at 0.42: a little louder than before, overlapping notes stay clean
 // The last stage: peaks above 0.45 are rounded off softly towards a ceiling
 // of 0.6, never clipped; ordinary playing stays below the knee, untouched.
+// Each sound's loudness, matched by ear-level RMS (about -21 dBFS) with peaks
+// kept under the soft knee: a Q31 fraction and a left shift (+9 to +18 dB).
+struct Lift { u32 shift; i32 fraction; };
+const Lift lifts[journey::tone_count] = {
+    {2u, 1478665276},
+    {2u, 1530628777},
+    {2u, 1777746672},
+    {2u, 1798332008},
+    {3u, 2132258619},
+    {2u, 1659089727},
+    {2u, 1904889879},
+    {2u, 1883084785},
+    {2u, 2137321597},
+    {3u, 1441583751},
+    {2u, 2017761700},
+    {3u, 1212941565},
+    {3u, 1509523501},
+    {3u, 1492244128},
+    {3u, 1562571427}
+};
 inline i32 soften(i32 sum) {
     const u32 knee = 0x39999999u, room = 0x0ccccccdu;                // 0.45, and 0.15 more
     const bool down = sum < 0;
@@ -159,7 +179,14 @@ inline void render(Voice& v, Shared& shared, u32, opxy::Output output, opxy::Par
             note.ratio = 0;
         }
     }
-    for (unsigned i = 0; i < opxy::block_frames; ++i) output[i] = soften(output[i]);
+    const Lift lift = lifts[c.sound];
+    for (unsigned i = 0; i < opxy::block_frames; ++i) {
+        i32 x = multiply(output[i], lift.fraction);
+        const i32 limit = 0x7fffffff >> lift.shift;              // saturate instead of wrapping
+        if (x > limit) x = limit;
+        if (x < -limit) x = -limit;
+        output[i] = soften(x << lift.shift);
+    }
     v.clock = now + opxy::block_frames;
 }
 }
